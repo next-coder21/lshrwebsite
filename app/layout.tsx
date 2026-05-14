@@ -17,10 +17,16 @@ export const metadata: Metadata = {
   description:
     "L'sHR brings your entire people operations under one roof — from hiring to payroll, attendance to approvals — with enterprise power and zero complexity.",
   keywords: "HR software, payroll, employee management, attendance, recruitment, HRMS",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
   openGraph: {
     title: "L'sHR — The HR Platform Built for Scale",
     description: "Modern HR for modern teams. Employees, payroll, leaves, shifts, and more.",
     type: "website",
+    images: [{ url: "/logo.png" }],
   },
 };
 

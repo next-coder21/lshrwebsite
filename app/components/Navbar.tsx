@@ -54,9 +54,11 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-[72px]">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 bg-gradient-to-br from-red-600 to-orange-500 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-md group-hover:shadow-red-400/40 transition-shadow">
-            L
-          </div>
+          <img
+            src="/logo.png"
+            alt="LisHR Logo"
+            className="w-9 h-9 rounded-xl object-contain shadow-md group-hover:shadow-red-400/40 transition-shadow"
+          />
           <span className={`text-xl font-black tracking-tight transition-colors ${scrolled ? "text-gray-900" : "text-white"}`}>
             Liji<span className="text-red-500">HR</span>
           </span>
@@ -125,6 +127,8 @@ export default function Navbar() {
           <Link href="/pricing" className={`text-[11px] font-black uppercase tracking-widest transition-colors ${navText} ${navHover}`}>Pricing</Link>
           <Link href="/blog" className={`text-[11px] font-black uppercase tracking-widest transition-colors ${navText} ${navHover}`}>Blog</Link>
           <Link href="/about" className={`text-[11px] font-black uppercase tracking-widest transition-colors ${navText} ${navHover}`}>About</Link>
+          <Link href="/changelog" className={`text-[11px] font-black uppercase tracking-widest transition-colors ${navText} ${navHover}`}>Changelog</Link>
+          <Link href="/flow" className={`text-[11px] font-black uppercase tracking-widest transition-colors ${navText} ${navHover}`}>App Flow</Link>
         </div>
 
         {/* Desktop CTAs */}
@@ -157,6 +161,8 @@ export default function Navbar() {
           <Link href="/about" onClick={() => setMenuOpen(false)} className="block px-2 py-2.5 text-[11px] font-black uppercase tracking-widest text-gray-700 hover:text-red-600 transition-colors">About</Link>
           <Link href="/blog" onClick={() => setMenuOpen(false)} className="block px-2 py-2.5 text-[11px] font-black uppercase tracking-widest text-gray-700 hover:text-red-600 transition-colors">Blog</Link>
           <Link href="/contact" onClick={() => setMenuOpen(false)} className="block px-2 py-2.5 text-[11px] font-black uppercase tracking-widest text-gray-700 hover:text-red-600 transition-colors">Contact</Link>
+          <Link href="/changelog" onClick={() => setMenuOpen(false)} className="block px-2 py-2.5 text-[11px] font-black uppercase tracking-widest text-gray-700 hover:text-red-600 transition-colors">Changelog</Link>
+          <Link href="/flow" onClick={() => setMenuOpen(false)} className="block px-2 py-2.5 text-[11px] font-black uppercase tracking-widest text-gray-700 hover:text-red-600 transition-colors">App Flow</Link>
           <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
             <a href="https://app.lishr.in/login" className="w-full py-3 text-center rounded-xl border-2 border-gray-200 text-[11px] font-black uppercase tracking-widest text-gray-700 hover:border-gray-400 transition-colors">Sign In</a>
             <a href="https://app.lishr.in" className="w-full py-3 text-center bg-red-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-red-500 transition-colors">Get Started Free</a>

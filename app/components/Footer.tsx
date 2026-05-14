@@ -6,9 +6,9 @@ const LINKS = [
     items: [
       { label: "Features", href: "/features" },
       { label: "Pricing", href: "/pricing" },
-      { label: "Changelog", href: "#" },
+      { label: "Changelog", href: "/changelog" },
+      { label: "App Flow", href: "/flow" },
       { label: "Roadmap", href: "#" },
-      { label: "API Docs", href: "#" },
     ],
   },
   {
@@ -49,9 +49,7 @@ export default function Footer() {
           {/* Brand column */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2.5 mb-5">
-              <div className="w-9 h-9 bg-gradient-to-br from-red-600 to-orange-500 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-md">
-                L
-              </div>
+              <img src="/logo.png" alt="LisHR Logo" className="w-9 h-9 rounded-xl object-contain shadow-md" />
               <span className="text-xl font-black text-white tracking-tight">
                 Liji<span className="text-red-500">HR</span>
               </span>
