@@ -19,20 +19,21 @@ const ROLES = [
 ];
 
 const AUTH_FLOW = [
-  { step: "01", label: "POST /auth/login", desc: "Email + password submitted. BCrypt password verified against DB.", icon: Key },
-  { step: "02", label: "JWT Issued", desc: "HS512-signed JWT with userId, tenantId, role, and 24h expiry.", icon: Lock },
+  { step: "01", label: "POST /auth/login", desc: "Email + password submitted. BCrypt password verified against DB. Rate limited: 10 req/min per IP via Bucket4j.", icon: Key },
+  { step: "02", label: "JWT Issued", desc: "HS512-signed JWT with userId, tenantId, role, and 24h expiry. Secret from JWT_SECRET env var only — no hardcoded fallback in production.", icon: Lock },
   { step: "03", label: "Token stored", desc: "Frontend stores token in Redux auth slice. Axios interceptor attaches Bearer header on every request.", icon: Database },
   { step: "04", label: "JwtAuthenticationFilter", desc: "Every request intercepted. Token validated, SecurityContext populated with UserPrincipal.", icon: Shield },
   { step: "05", label: "@PreAuthorize", desc: "Method-level role checks on every controller endpoint. Returns 403 if role insufficient.", icon: CheckCircle2 },
   { step: "06", label: "Tenant isolation", desc: "SecurityUtils.getCurrentTenantId() scopes all DB queries to caller's tenant. Cross-tenant data access is impossible.", icon: Building2 },
+  { step: "07", label: "Password Reset flow", desc: "POST /auth/forgot-password (rate limited 3/min) creates 30-min token → email with portal link. POST /auth/reset-password validates token, BCrypt-encodes new password, marks token used.", icon: Key },
 ];
 
 const MODULES = [
   { icon: BarChart3, label: "Dashboard", color: "text-red-600", bg: "bg-red-50", border: "border-red-100", flows: [{ actor: "SUPER_ADMIN", api: "GET /super-admin/stats", result: "Platform totals: tenants, users, employees, MRR" }, { actor: "CLIENT_ADMIN / MANAGER", api: "GET /dashboard/stats", result: "Tenant totals: headcount, budget, attendance, leave counts" }] },
   { icon: Users, label: "Employee Management", color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100", flows: [{ actor: "CLIENT_ADMIN", api: "GET / POST / PUT / DELETE /employees", result: "Full CRUD. @Valid on create + update. Excel export." }, { actor: "Any authenticated", api: "GET /employees/me", result: "Self-service — resolves own employee record via linked userId." }] },
-  { icon: Clock, label: "Attendance", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100", flows: [{ actor: "Any authenticated", api: "POST /attendance/check-in & check-out", result: "Records session. Marks LATE if after 09:15. Calculates work duration." }, { actor: "MANAGER / CLIENT_ADMIN", api: "GET /attendance/team", result: "Department-scoped records via manager's linked employee → department." }] },
+  { icon: Clock, label: "Attendance", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100", flows: [{ actor: "Any authenticated", api: "POST /attendance/check-in & check-out", result: "Records session. Marks LATE if after 09:15. Calculates work duration." }, { actor: "MANAGER / CLIENT_ADMIN", api: "GET /attendance/team", result: "Department-scoped records via manager's linked employee → department." }, { actor: "Any authenticated", api: "POST /attendance/regularizations", result: "Submit correction request for missed/wrong attendance (date, check-in/out, reason). Status: PENDING." }, { actor: "MANAGER / CLIENT_ADMIN", api: "GET /attendance/regularizations/pending + PATCH /{id}/review", result: "View pending correction requests. Approve (upserts actual attendance record) or Reject." }] },
   { icon: FileText, label: "Leave Management", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100", flows: [{ actor: "Any authenticated", api: "POST /leaves", result: "Apply for leave. Email to employee + tenant admin. Status: PENDING." }, { actor: "MANAGER / CLIENT_ADMIN", api: "PATCH /leaves/{id}/status + GET /leaves/pending-approvals", result: "Approve / reject with email notification. Pending approvals panel." }, { actor: "Any authenticated", api: "GET /leaves/balance", result: "Allocated / used (APPROVED days) / remaining per leave type." }] },
-  { icon: CreditCard, label: "Payroll", color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-100", flows: [{ actor: "CLIENT_ADMIN", api: "POST /payroll", result: "Process payroll for employee + month/year. @Valid + @PreAuthorize." }, { actor: "CLIENT_ADMIN", api: "PATCH /payroll/{id}/status", result: "DRAFT → PROCESSED → PAID lifecycle." }] },
+  { icon: CreditCard, label: "Payroll", color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-100", flows: [{ actor: "CLIENT_ADMIN", api: "POST /payroll", result: "Process payroll for employee + month/year. @Valid + @PreAuthorize." }, { actor: "CLIENT_ADMIN", api: "POST /payroll/bulk", result: "Batch-process payroll for multiple employees in one request. Skips duplicates." }, { actor: "CLIENT_ADMIN", api: "PATCH /payroll/{id}/status", result: "DRAFT → PROCESSED → PAID lifecycle." }, { actor: "Any authenticated", api: "GET /payroll/{id}/payslip", result: "iText 5 PDF payslip download with salary breakdown table." }] },
   { icon: Briefcase, label: "Recruitment", color: "text-pink-600", bg: "bg-pink-50", border: "border-pink-100", flows: [{ actor: "CLIENT_ADMIN", api: "POST /jobs", result: "Create job posting: OPEN / CLOSED / DRAFT / PAUSED." }, { actor: "Any", api: "POST /candidates", result: "APPLIED → SCREENING → INTERVIEW → OFFER → HIRED / REJECTED." }] },
 ];
 
@@ -49,7 +50,7 @@ const STACK = [
   { layer: "Frontend", items: ["React 19", "TypeScript 5.9", "Vite 7", "Redux Toolkit 2", "React Router 7", "TailwindCSS 4"], color: "text-cyan-600", bg: "bg-cyan-50", icon: Globe },
   { layer: "Backend", items: ["Spring Boot 3.2.1", "Java 21", "Spring Security 6", "JWT (HS512)", "JPA / Hibernate", "Hexagonal Architecture"], color: "text-blue-600", bg: "bg-blue-50", icon: Server },
   { layer: "Database", items: ["PostgreSQL (port 5433)", "Multi-tenant via tenantId column", "Flyway (planned)", "ddl-auto: update (dev)"], color: "text-violet-600", bg: "bg-violet-50", icon: Database },
-  { layer: "Security", items: ["BCrypt passwords", "JWT HS512 from env var", "Method-level @PreAuthorize", "Tenant data isolation", "@Valid on all requests", "GlobalExceptionHandler"], color: "text-red-600", bg: "bg-red-50", icon: Shield },
+  { layer: "Security", items: ["BCrypt passwords", "JWT HS512 from env var (no fallback in prod)", "Method-level @PreAuthorize", "Tenant data isolation", "@Valid on all requests", "GlobalExceptionHandler (structured errors)", "Bucket4j rate limiting (login + forgot-password)", "Password reset tokens (30-min TTL)", "HikariCP connection pool", "Spring Boot Actuator health probe"], color: "text-red-600", bg: "bg-red-50", icon: Shield },
 ];
 
 const SPRINT_SUMMARY = [
@@ -57,7 +58,10 @@ const SPRINT_SUMMARY = [
   { sprint: "Sprint 2", label: "Platform Stats & UX Hardening", done: 9, color: "bg-emerald-500" },
   { sprint: "Sprint 3", label: "Employee Self-Service & Nav", done: 3, color: "bg-emerald-500" },
   { sprint: "Sprint 4", label: "Manager Views", done: 2, color: "bg-emerald-500" },
-  { sprint: "Sprint 5+", label: "Settings, Payroll Calc, Docker", done: 0, color: "bg-gray-600" },
+  { sprint: "Sprint 5", label: "Production Hardening", done: 8, color: "bg-emerald-500" },
+  { sprint: "Sprint 6", label: "Auth Features & PDF Payslips", done: 9, color: "bg-emerald-500" },
+  { sprint: "Sprint 7", label: "Backend Features & Testing", done: 6, color: "bg-emerald-500" },
+  { sprint: "Sprint 8", label: "E2E Validation & Bug Fixes", done: 5, color: "bg-emerald-500" },
 ];
 
 // ─── Flow chart nodes ─────────────────────────────────────────────────────────
